@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<title></title>
+		<style>
+			ul{
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			
+			.upload-preview-section{
+				border: 1px solid black;
+				min-height: 300px;
+				
+				padding: 1em;
+			}
+			.upload-preview-item-wrapper{
+				display: block;
+				height: 100%;
+				padding: 1em;
+				box-sizing: border-box;
+				border: 1px dashed #C0A10A;
+				background: #FBFBFB;
+			}
+			.upload-preview-item{
+				border: 1px solid #EBEBEB;
+				padding: 5px;
+				min-width: 100px;
+				box-sizing: border-box;
+				display: inline-block;
+				margin-left: 1em;
+				position: relative;
+				vertical-align: top;
+				text-align: center;
+				border-radius: 6px;
+			}
+			.upload-preview-item:hover>.upload-preview-item-delete-btn{
+				display: inline-block;
+			}
+			
+			.upload-preview-item-delete-btn{
+				position: absolute;
+				top:5px;
+				right:5px;
+				cursor: pointer;
+				border-radius: 10px;
+				background: black;
+				color: white;
+				cursor: pointer;
+				display: none;
+				height: 20px;
+				width: 20px;
+				text-align: center;
+				line-height: 20px;
+			}
+			.upload-preview-item-delete-btn:hover{
+				background: red;
+				color: white;
+			}
+			.upload-preview-add-btn{
+				padding: 0;
+				background: #E0BC0B;
+			}
+			.upload-preview-add-btn>label{
+				display: block;
+				height: 100%;
+				cursor: pointer;
+				height: 290px;
+				width: 160px;
+				text-align: center;
+				padding: 1em;
+				box-sizing: border-box;
+				font-size: 120%;
+			}
+			
+			.upload-preview-section.ondraging{
+				background: red;
+			}
+			
+			progress{
+				width: 100%;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<article>
+			<header>
+				<span>
+					你选择了 <b id="fileTotalAmountEL">0</b> 个文件，
+					最大文件大小为: <b id="maxFileSizeEL">0</b> KB
+					总大小为: <b id="totalFileSizeEL">0</b> KB
+				</span>
+				<button id="uploadBtn">开始上传</button>
+			</header>
+			<section id="uploadProgressBar" style="display: none;" class="upload-progress-wrapper">
+				<span class="indication-value">0%</span>
+				<progress id="uploadProgressEL" value="0"  max="100" ></progress>
+			</section>
+			<section id="previewItemContainer" class="upload-preview-section">
+				<input style="display: none;" id="selectFilesInputEL" multiple  type="file"  />
+				<ul class="upload-preview-item-wrapper" id="previewItemWrapperEL">
+					<li class="upload-preview-item upload-preview-add-btn">
+						<label for="selectFilesInputEL">
+							拖入文件到<b>虚线内</b>或<b>点击选择</b>文件
+						</label>
+					</li>
+				</ul>					
+			</section>
+		</article>
+		
+		<script src="file-upload.js"></script>
+	</body>
+</html>
