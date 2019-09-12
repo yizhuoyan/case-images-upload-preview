@@ -4,46 +4,60 @@
 		previewWidth:160,
 		previewHeight:240,
 		url:(function(href){
-				return "public-api/upload"
+				return "public-api/upload";
 		})(window.location.href),
 		
 		version:"1.0"
 	};
+	
 	var fileSelectInputEL,
-		previewItemContainer,
-		previewItemWrapperEL,
+		dragZone,
 		uploadBtnEL,
+		addFileBtnWrapper,
 		uploadProgressBar,
 		uploadProgressEL,
 		fileTotalAmountEL,
 		maxFileSizeEL,
 		totalFileSizeEL,
+		uploadProgressValueEL,
 	last;
 	//the selected files
 	var selectedFilesDataModel=[];
+	//the total file size
 	selectedFilesDataModel.totalFileSize=0;
+	//the max file size
 	selectedFilesDataModel.maxFileSize=0;
 	
 	
 	window.addEventListener("load",function(){
-		fileTotalAmountEL=$("#fileTotalAmountEL");
-		maxFileSizeEL=$("#maxFileSizeEL");
-		totalFileSizeEL=$("#totalFileSizeEL");
-		uploadBtnEL=$("#uploadBtn");
+		fileTotalAmountEL=$("#up_fileTotalAmountEL");
+		maxFileSizeEL=$("#up_maxFileSizeEL");
+		totalFileSizeEL=$("#up_totalFileSizeEL");
+		uploadBtnEL=$("#up_uploadBtn");
+		addFileBtnWrapper=$("#up_addFileBtnWrapper");
+		fileSelectInputEL=$("#up_selectFilesInputEL");
+		dragZone=$("#up_dragZone");
 		
-		fileSelectInputEL=$("#selectFilesInputEL");
-		previewItemContainer=$("#previewItemContainer");
-		previewItemWrapperEL=$("#previewItemWrapperEL");
+		uploadProgressBar=$("#up_uploadProgressBar");
+		uploadProgressValueEL=$("#up_uploadProgressValueEL");
+		uploadProgressEL=$("#up_uploadProgressEL");
 		
-		uploadProgressBar=$("#uploadProgressBar");
-		uploadProgressEL=$("#uploadProgressEL");
-		handleDragAndDropFile(previewItemWrapperEL);
+		//
+		handleDragAndDropFile(dragZone);
+		//
 		fileSelectInputEL.addEventListener("change",handelSelectFileChange);
+		//
 		uploadBtnEL.addEventListener("click",handleUploadBtnClick,false);
+		//
+		resizeAddFileBtn();
 	});
 	
 	
-		
+		var resizeAddFileBtn=function(){
+			addFileBtnWrapper.style.width=setting.previewWidth+"px";
+			addFileBtnWrapper.style.height=setting.previewHeight+"px";
+			addFileBtnWrapper.style.boxSizing="border-box";
+		}
 		
 		var  handelSelectFileChange=function(evt){
 			var fs=this.files;
@@ -117,21 +131,27 @@
 			var fr=new FileReader();
 			fr.onload=function(evt){
 				var view=handleOneFile.createPreviewView(f,this.result);
-				previewItemWrapperEL.insertBefore(view,previewItemWrapperEL.lastElementChild);	
+				//dragZone.insertBefore(view,dragZone.lastElementChild);	
+				dragZone.appendChild(view);	
 			}
 			fr.readAsDataURL(f);
 		};
 		
 		handleOneFile.createPreviewView=function(f,imgData){
-			//image name
-			var figureCaptionEL=document.createElement("figcaption");
-			figureCaptionEL.textContent=f.name;
-			//img
-			var imgEL=document.createElement("img");
-			//size element
-			var sizeEL=document.createElement("small");
 			
-			imgEL.src=imgData;
+			var previewView=document.createElement("li");
+			previewView.className="upload-preview-item";
+			//previewView.title="双击放大";
+			var imgEL=document.createElement("img");
+			imgEL.style.display="none";
+			var imgDetailDiv=document.createElement("div");
+			imgDetailDiv.className="upload-preview-item-detail"
+			var imgDetailSizeEL=document.createElement("small");
+			imgDetailDiv.appendChild(imgDetailSizeEL);
+			
+			previewView.appendChild(imgEL);
+			previewView.appendChild(imgDetailDiv);
+			
 			imgEL.onload=function(){
 				var aw=this.width;
 				var ah=this.height;
@@ -141,33 +161,30 @@
 				f.height=ah;
 				imgEL.width=setting.previewWidth;
 				imgEL.height=setting.previewHeight;
-				sizeEL.textContent=(f.size/1024).toFixed(2)+"KB("+aw+"x"+ah+")";
+				imgEL.style.display="block";
+				imgDetailSizeEL.textContent=(f.size/1024).toFixed(2)+"KB("+aw+"x"+ah+")";
 			}
+			imgEL.src=imgData;
 			
-			
-			var figure=document.createElement("figure");
-			figure.appendChild(imgEL);
-			figure.appendChild(figureCaptionEL);
-			figure.appendChild(sizeEL);
-			figure.style.margin="0";
-			figure.style.padding="0";
 			//delete btn
 			var deleteBtn=document.createElement("a");
 			deleteBtn.textContent="X";
-			deleteBtn.className="upload-preview-item-delete-btn";
+			deleteBtn.className="upload-preview-item-btn";
 			deleteBtn.addEventListener("click",handleDeleteBtnClick);
 			
-			var view=document.createElement("li");
-			view.className="upload-preview-item";
-			view.appendChild(figure);
-			view.appendChild(deleteBtn);
+			
+			
+			
+			
+			previewView.appendChild(deleteBtn);
+			
 			
 			//bind data
-			deleteBtn.targetView=view;
-			view.dataModel=f;
-			f.view=view;
+			deleteBtn.targetView=previewView;
+			previewView.dataModel=f;
+			f.previewView=previewView;
 			
-			return view;
+			return previewView;
 		};
 		var handleDeleteBtnClick=function(evt){
 		 	var previewView=this.targetView;
@@ -181,8 +198,7 @@
 			if(selectedFilesDataModel.length>0){
 				uploadBtnEL.disabled=true;
 				//show progress
-				uploadProgressBar.style.display="block";
-				previewItemContainer.style.display="none";	
+				uploadProgressBar.style.visibility="visible";
 				var run=function(){
 				    if(uploadProgressEL.value<uploadProgressEL.max){
 				        uploadProgressEL.value++;
@@ -194,14 +210,15 @@
 				$.uploadFiles(selectedFilesDataModel,function(value,max){
 					if(value===-1){
 					    uploadProgressEL.value=uploadProgressEL.max;
+						uploadProgressValueEL.textContent="100%";
 					}else{
 					    uploadProgressEL.value=value;
 					    uploadProgressEL.max=max;
+						uploadProgressValueEL.textContent=Math.round(value/max*100)+"%";
 					}
-				}).then(function(result){
-					console.log(result)
-					uploadProgressBar.style.display="none";
-					previewItemContainer.style.display="block";
+				}).catch(function(result){
+					console.log(result);
+					uploadProgressValueEL.textContent=String(result);
 					uploadBtnEL.disabled=false;
 					var fs=selectedFilesDataModel;
 					while(fs.length>0){
@@ -237,6 +254,7 @@
 		}
 		return f2===null;
 	};
+	
 	$.uploadFiles=function(fs,progressListener){
 		progressListener=progressListener||function(){};
 		return new Promise(function(ok,failed){
@@ -254,7 +272,7 @@
 			    }
 			};
 			xhr.onloadend = function(pe) {
-			    progressListener(-1);
+			    //progressListener(-1);
 			}
 		 	xhr.onreadystatechange = function() {
 	            if (this.readyState == 4){ 
