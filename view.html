@@ -4,113 +4,168 @@
 		<meta charset="utf-8" />
 		<title></title>
 		<style>
-			ul{
-				list-style: none;
+			body{
 				margin: 0;
-				padding: 0;
+			}
+			.upload-preview{
+				padding: 15px;
+				font-size: 15px;
 			}
 			
-			.upload-preview-section{
+			.upload-preview-select-section{
 				border: 1px solid black;
-				min-height: 300px;
-				
-				padding: 1em;
+				padding: 0 1em 1em 1em;
 			}
-			.upload-preview-item-wrapper{
+			
+			.upload-preview-drag-zone{
 				display: block;
-				height: 100%;
 				padding: 1em;
 				box-sizing: border-box;
-				border: 1px dashed #C0A10A;
-				background: #FBFBFB;
+				border: 2px dashed hsl(50,90%,50%);
+				background: hsl(60,80%,94%);
+				margin: 0;
+			}
+			.upload-preview-drag-zone:hover{
+				border: 2px dotted hsl(50,100%,60%);
+			}
+			.upload-preview-drag-zone.ondraging{
+				background: hsl(60,100%,98%);
 			}
 			.upload-preview-item{
-				border: 1px solid #EBEBEB;
-				padding: 5px;
-				min-width: 100px;
-				box-sizing: border-box;
-				display: inline-block;
-				margin-left: 1em;
 				position: relative;
+				display: inline-block;
+				box-sizing: border-box;
+				border: 1px solid hsl(0,0%,80%);
+				padding: 4px;
 				vertical-align: top;
 				text-align: center;
 				border-radius: 6px;
+				background: hsl(0,0%,92%);
+				overflow: hidden;
+				margin:8px;
 			}
-			.upload-preview-item:hover>.upload-preview-item-delete-btn{
-				display: inline-block;
+			.upload-preview-item-detail{
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				text-align: center;
+				color: white;
+				background: hsla(0,0%,0%,0.2);
 			}
-			
-			.upload-preview-item-delete-btn{
+			.upload-preview-item:hover>.upload-preview-item-detail{
+				display: none;
+			}			
+			.upload-preview-item-btn{
 				position: absolute;
 				top:5px;
-				right:5px;
+				right: 5px;
+				margin-right:5px;
 				cursor: pointer;
 				border-radius: 10px;
-				background: black;
+				background: #E0BC0B;
 				color: white;
-				cursor: pointer;
 				display: none;
 				height: 20px;
 				width: 20px;
 				text-align: center;
 				line-height: 20px;
 			}
-			.upload-preview-item-delete-btn:hover{
+			.upload-preview-item-btn:hover{
 				background: red;
 				color: white;
 			}
-			.upload-preview-add-btn{
-				padding: 0;
-				background: #E0BC0B;
+			.upload-preview-item:hover>.upload-preview-item-btn{
+				display: inline-block;
 			}
-			.upload-preview-add-btn>label{
-				display: block;
-				height: 100%;
+			
+	        .upload-preview-add-btn-box{
+				display: flex;
+				flex-flow: column nowrap;
+				justify-content: flex-start;
+				align-items: stretch;
+			}						
+			
+			label.upload-preview-add-btn{
+				flex:auto;
 				cursor: pointer;
-				height: 290px;
-				width: 160px;
 				text-align: center;
-				padding: 1em;
-				box-sizing: border-box;
-				font-size: 120%;
+				border: 5px solid #FBFBFB;
+				background: #E0BC0B;
+				color: hsl(0,100%,100%);
+				display: flex;
+				justify-content: center;
+				align-items: center;
+			}
+			label.upload-preview-add-btn:hover{
+				color: hsl(0,100%,50%);
 			}
 			
-			.upload-preview-section.ondraging{
-				background: red;
+			label.upload-preview-add-btn:after{
+				content: "+";
+				font-size: 800%;
+				font-weight: bold;
 			}
 			
-			progress{
+			
+			.upload-preview-progressbar{
+				display: block;
+				visibility: hidden;
+				position: relative;
+			}
+			.upload-preview-progressbar>progress{
 				width: 100%;
 			}
+			.upload-preview-progressbar>.indication-value{
+				position: absolute;
+				top:0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				margin: auto;
+				text-align: center;				
+			}
+			
+			
+			
+			
+			
 			
 		</style>
 	</head>
 	<body>
-		<article>
-			<header>
+		<article class="upload-preview">
+			<header class="upload-preview-detail-section">
 				<span>
-					你选择了 <b id="fileTotalAmountEL">0</b> 个文件，
-					最大文件大小为: <b id="maxFileSizeEL">0</b> KB
-					总大小为: <b id="totalFileSizeEL">0</b> KB
+					你选择了 <b id="up_fileTotalAmountEL">0</b> 个文件，
+					最大文件大小为: <b id="up_maxFileSizeEL">0</b> KB
+					总大小为: <b id="up_totalFileSizeEL">0</b> KB
 				</span>
-				<button id="uploadBtn">开始上传</button>
+				<button id="up_uploadBtn">开始上传</button>
 			</header>
-			<section id="uploadProgressBar" style="display: none;" class="upload-progress-wrapper">
-				<span class="indication-value">0%</span>
-				<progress id="uploadProgressEL" value="0"  max="100" ></progress>
-			</section>
-			<section id="previewItemContainer" class="upload-preview-section">
-				<input style="display: none;" id="selectFilesInputEL" multiple  type="file"  />
-				<ul class="upload-preview-item-wrapper" id="previewItemWrapperEL">
-					<li class="upload-preview-item upload-preview-add-btn">
-						<label for="selectFilesInputEL">
-							拖入文件到<b>虚线内</b>或<b>点击选择</b>文件
-						</label>
+
+
+
+			<section class="upload-preview-select-section">
+				<input style="display: none;" id="up_selectFilesInputEL" multiple type="file" />
+				<div id="up_uploadProgressBar" class="upload-preview-progressbar">
+					<span class="indication-value" id="up_uploadProgressValueEL">0%</span>
+					<progress id="up_uploadProgressEL" value="10" max="100">11</progress>
+				</div>
+				<ul class="upload-preview-drag-zone" id="up_dragZone">
+					<li  class="upload-preview-item">
+						<div id="up_addFileBtnWrapper" class="upload-preview-add-btn-box">
+							<p>
+								拖入文件到<b>虚线内</b><br>或<b>点击下方+号</b>
+							</p>
+							<label class="upload-preview-add-btn" for="up_selectFilesInputEL">								
+							</label>
+						</div>
 					</li>
-				</ul>					
+				</ul>
 			</section>
 		</article>
-		
+
 		<script src="file-upload.js"></script>
 	</body>
 </html>
